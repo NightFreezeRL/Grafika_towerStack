@@ -1,6 +1,3 @@
-
-window.focus(); // Capture keys right away (by default focus is on editor)
-
 let camera, scene, renderer; // ThreeJS globals
 let world; // CannonJs world
 let lastTime; // Last timestamp of animation
@@ -28,9 +25,7 @@ function init() {
 
   // Initialize CannonJS
   world = new CANNON.World();
-  world.gravity.set(0, -10, 0); // Gravity pulls things down
-  world.broadphase = new CANNON.NaiveBroadphase();
-  world.solver.iterations = 40;
+  world.gravity.set(0, -30, 0); // Gravity pulls things down
 
   // Initialize ThreeJs
   const aspect = window.innerWidth / window.innerHeight;
@@ -40,8 +35,8 @@ function init() {
   camera = new THREE.OrthographicCamera(
     width / -2, // left
     width / 2, // right
-    height / 2, // top
-    height / -2, // bottom
+    height / 1, // top
+    height / -1, // bottom
     0, // near plane
     100 // far plane
   );
@@ -55,8 +50,6 @@ function init() {
   // Foundation
   addLayer(0, 0, originalBoxSize, originalBoxSize);
 
-  // First layer
-  addLayer(-10, 0, originalBoxSize, originalBoxSize, "x");
 
   // Set up lights
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -169,16 +162,6 @@ function cutBox(topLayer, overlap, size, delta) {
   // Update ThreeJS model
   topLayer.threejs.scale[direction] = overlap / size;
   topLayer.threejs.position[direction] -= delta / 2;
-
-  // Update CannonJS model
-  //topLayer.cannonjs.position[direction] -= delta / 2;
-
-  // Replace shape to a smaller one (in CannonJS you can't simply just scale a shape)
-  //const shape = new CANNON.Box(
-  //  new CANNON.Vec3(newWidth / 2, boxHeight / 2, newDepth / 2)
-  //);
-  //topLayer.cannonjs.shapes = [];
-  //topLayer.cannonjs.addShape(shape);
 }
 
 window.addEventListener("mousedown", eventHandler);
@@ -248,8 +231,6 @@ function animation(time) {
     const topLayer = stack[stack.length - 1];
     const previousLayer = stack[stack.length - 2];
 
-    // The top level box should move if the game has not ended AND
-    // it's either NOT in autopilot or it is in autopilot and the box did not yet reach the robot position
     const boxShouldMove = !gameEnded
 
     if (boxShouldMove) {
@@ -276,7 +257,7 @@ function animation(time) {
 }
 
 function updatePhysics(timePassed) {
-  world.step(timePassed / 1000); // Step the physics world
+  world.step(timePassed / 2300); // Step the physics world
 
   // Copy coordinates from Cannon.js to Three.js
   overhangs.forEach((element) => {

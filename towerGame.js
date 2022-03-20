@@ -12,9 +12,6 @@ const scoreElement = document.getElementById("score");
 
 init();
 
-
-
-
 function init() {
 
   gameEnded = true;

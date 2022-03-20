@@ -10,6 +10,7 @@ let gameEnded;
 
 const scoreElement = document.getElementById("score");
 
+
 init();
 
 function init() {
@@ -18,12 +19,12 @@ function init() {
   lastTime = 0;
   stack = [];
   overhangs = [];
-	
+
 
   // Initialize CannonJS
   world = new CANNON.World();
   world.gravity.set(0, -100, 0); // Gravity pulls things down
-
+  
   // Initialize ThreeJs
   const aspect = window.innerWidth / window.innerHeight;
   const width = 10;
@@ -43,9 +44,10 @@ function init() {
   camera.lookAt(0, 0, 0);
 
   scene = new THREE.Scene();
-
   // Foundation
   addLayer(0, 0, originalBoxSize, originalBoxSize);
+
+
   // Set up lights
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
   scene.add(ambientLight);
@@ -55,11 +57,12 @@ function init() {
   scene.add(dirLight);
 
   // Set up renderer
-  renderer = new THREE.WebGLRenderer({ alpha : true ,antialias: true });
+  renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setClearColor(0xffffff,0);
   renderer.setAnimationLoop(animation);
+  renderer.setClearColor( 0xffff00, 0);
   document.body.appendChild(renderer.domElement);
+  
 }
 
 function startGame() {
@@ -131,13 +134,7 @@ function generateBox(x, y, z, width, depth, falls) {
   const body = new CANNON.Body({ mass, shape });
   body.position.set(x, y, z);
   world.addBody(body);
-  /*
-  if (world) {
-    while (world.bodies.length > 0) {
-      world.remove(world.bodies[0]);
-    }
-  }
-*/
+ 
   return {
     threejs: mesh,
     cannonjs: body,

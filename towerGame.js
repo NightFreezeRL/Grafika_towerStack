@@ -12,9 +12,6 @@ const scoreElement = document.getElementById("score");
 
 init();
 
-
-
-
 function init() {
 
   gameEnded = true;
@@ -25,7 +22,7 @@ function init() {
 
   // Initialize CannonJS
   world = new CANNON.World();
-  world.gravity.set(0, -30, 0); // Gravity pulls things down
+  world.gravity.set(0, -100, 0); // Gravity pulls things down
 
   // Initialize ThreeJs
   const aspect = window.innerWidth / window.innerHeight;
@@ -118,7 +115,7 @@ function addOverhang(x, z, width, depth) {
 function generateBox(x, y, z, width, depth, falls) {
   // ThreeJS
   const geometry = new THREE.BoxGeometry(width, boxHeight, depth);
-  const color = new THREE.Color(`hsl(${0 + stack.length * 4}, 90%, 60%)`);
+  const color = new THREE.Color(`hsl(${0 + stack.length * 7}, 90%, 60%)`);
   const material = new THREE.MeshLambertMaterial({ color });
   const mesh = new THREE.Mesh(geometry, material);
   mesh.position.set(x, y, z);

@@ -21,7 +21,7 @@ function init() {
   lastTime = 0;
   stack = [];
   overhangs = [];
-
+	
 
   // Initialize CannonJS
   world = new CANNON.World();
@@ -49,8 +49,6 @@ function init() {
 
   // Foundation
   addLayer(0, 0, originalBoxSize, originalBoxSize);
-
-
   // Set up lights
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
   scene.add(ambientLight);
@@ -60,8 +58,9 @@ function init() {
   scene.add(dirLight);
 
   // Set up renderer
-  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer = new THREE.WebGLRenderer({ alpha : true ,antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0xffffff,0);
   renderer.setAnimationLoop(animation);
   document.body.appendChild(renderer.domElement);
 }

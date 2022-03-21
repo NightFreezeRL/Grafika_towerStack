@@ -63,7 +63,7 @@ function init() {
   renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setAnimationLoop(animation);
-  renderer.setClearColor( 0xffff00, 0); //transparent background
+  renderer.setClearColor( 0xffffff, 0); //transparent background
   document.body.appendChild(renderer.domElement);
   
 }

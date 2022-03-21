@@ -6,7 +6,7 @@ let overhangs; // Overhanging parts that fall down
 const boxHeight = 1; // Height of each layer
 const originalBoxSize = 3; // Original width and height of a box
 
-let gameEnded;
+let ended;
 
 const scoreElement = document.getElementById("score");
 
@@ -15,7 +15,7 @@ init();
 
 function init() {
 
-  gameEnded = true;
+  ended = true;
   lastTime = 0;
   stack = [];
   overhangs = [];
@@ -40,7 +40,7 @@ function init() {
   );
 
 
-  camera.position.set(4, 4, 4);
+  camera.position.set(5, 5, 5);
   camera.lookAt(0, 0, 0);
 
   scene = new THREE.Scene();
@@ -49,11 +49,11 @@ function init() {
 
 
   // Set up lights
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
   scene.add(ambientLight);
 
-  const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
-  dirLight.position.set(10, 20, 0);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.65);
+  dirLight.position.set(13, 15, 5);
   scene.add(dirLight);
 
   // Set up renderer
@@ -65,9 +65,9 @@ function init() {
   
 }
 
-function startGame() {
+function start() {
   
-  gameEnded = false;
+  ended = false;
   lastTime = 0;
   stack = [];
   overhangs = [];
@@ -160,12 +160,12 @@ function cutBox(topLayer, overlap, size, delta) {
 window.addEventListener("mousedown", eventHandler);
 
 function eventHandler() {
-  if (gameEnded) startGame();
+  if (ended) start();
   else splitBlockAndAddNextOneIfOverlaps();
 }
 
 function splitBlockAndAddNextOneIfOverlaps() {
-  if (gameEnded) return;
+  if (ended) return;
 
   const topLayer = stack[stack.length - 1];
   const previousLayer = stack[stack.length - 2];
@@ -213,7 +213,7 @@ function splitBlockAndAddNextOneIfOverlaps() {
 
 function missedTheSpot() {
   const topLayer = stack[stack.length - 1];
-  gameEnded = true;
+  ended = true;
 }
 
 function animation(time) {
@@ -224,7 +224,7 @@ function animation(time) {
     const topLayer = stack[stack.length - 1];
     const previousLayer = stack[stack.length - 2];
 
-    const boxShouldMove = !gameEnded
+    const boxShouldMove = !ended
 
     if (boxShouldMove) {
       // Keep the position visible on UI and the position in the model in sync

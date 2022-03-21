@@ -5,8 +5,8 @@ let tower; // Torņa gabali
 
 let ended;//Vai spēle ir beigusies
 let overhangs; // Pārpalikumi, kad torņa gabals ir pāri otram
-const towerHeight = 1; // torņa gabala lielums
-const originTowerSize = 3; // Orģinālais torņa gabala lielums
+const towerHeight = 0.5; // torņa gabala lielums
+const originTowerSize = 2; // Orģinālais torņa gabala lielums
 
 
 //Paņem no html faila score , kuram skaita klāt, kad pieliek torņa gabalu

@@ -10,7 +10,7 @@ const originTowerSize = 3; // Orģinālais torņa gabala lielums
 
 
 //Paņem no html faila score , kuram skaita klāt, kad pieliek torņa gabalu
-const scoreElement = document.getElementById("score");
+const scoring = document.getElementById("score");
 
 
 init();
@@ -75,7 +75,7 @@ function start() {
   tower = [];
   overhangs = [];
 
-  if (scoreElement) scoreElement.innerText = 0;
+  if (scoring) scoring.innerText = 0;
 
   if (world) {
     // Noņem objektus
@@ -173,7 +173,7 @@ function splitAndAdd() {
     const newDepth = topLayer.depth; 
     const nextDirection = direction == "x" ? "z" : "x";
 
-    if (scoreElement) scoreElement.innerText = tower.length - 1;
+    if (scoring) scoring.innerText = tower.length - 1;
     addLayer(nextX, nextZ, newWidth, newDepth, nextDirection);
   } else {
     missed();

@@ -161,10 +161,10 @@ window.addEventListener("mousedown", eventHandler);
 
 function eventHandler() {
   if (ended) start();
-  else splitBlockAndAddNextOneIfOverlaps();
+  else splitAndAdd();
 }
 
-function splitBlockAndAddNextOneIfOverlaps() {
+function splitAndAdd() {
   if (ended) return;
 
   const topLayer = stack[stack.length - 1];
@@ -173,9 +173,7 @@ function splitBlockAndAddNextOneIfOverlaps() {
   const direction = topLayer.direction;
 
   const size = direction == "x" ? topLayer.width : topLayer.depth;
-  const delta =
-    topLayer.threejs.position[direction] -
-    previousLayer.threejs.position[direction];
+  const delta = topLayer.threejs.position[direction] - previousLayer.threejs.position[direction];
   const overhangSize = Math.abs(delta);
   const overlap = size - overhangSize;
 
@@ -184,14 +182,8 @@ function splitBlockAndAddNextOneIfOverlaps() {
 
     // Overhang
     const overhangShift = (overlap / 2 + overhangSize / 2) * Math.sign(delta);
-    const overhangX =
-      direction == "x"
-        ? topLayer.threejs.position.x + overhangShift
-        : topLayer.threejs.position.x;
-    const overhangZ =
-      direction == "z"
-        ? topLayer.threejs.position.z + overhangShift
-        : topLayer.threejs.position.z;
+    const overhangX =direction == "x" ? topLayer.threejs.position.x + overhangShift: topLayer.threejs.position.x;
+    const overhangZ =direction == "z" ? topLayer.threejs.position.z + overhangShift: topLayer.threejs.position.z;
     const overhangWidth = direction == "x" ? overhangSize : topLayer.width;
     const overhangDepth = direction == "z" ? overhangSize : topLayer.depth;
 
@@ -207,11 +199,11 @@ function splitBlockAndAddNextOneIfOverlaps() {
     if (scoreElement) scoreElement.innerText = stack.length - 1;
     addLayer(nextX, nextZ, newWidth, newDepth, nextDirection);
   } else {
-    missedTheSpot();
+    missed();
   }
 }
 
-function missedTheSpot() {
+function missed() {
   const topLayer = stack[stack.length - 1];
   ended = true;
 }
@@ -233,7 +225,7 @@ function animation(time) {
 
       // If the box went beyond the stack then show up the fail screen
       if (topLayer.threejs.position[topLayer.direction] > 10) {
-        missedTheSpot();
+        missed();
       }
     } else {
     }

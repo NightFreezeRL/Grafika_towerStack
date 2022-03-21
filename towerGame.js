@@ -109,40 +109,6 @@ function addLayer(x, z, width, depth, direction) {
   stack.push(layer);
 }
 
-function addOverhang(x, z, width, depth) {
-  const y = boxHeight * (stack.length - 1); // Add the new box one the same layer
-  const overhang = generateBox(x, y, z, width, depth, true);
-  overhangs.push(overhang);
-}
-
-function generateBox(x, y, z, width, depth, falls) {
-  // ThreeJS
-  const geometry = new THREE.BoxGeometry(width, boxHeight, depth);
-  const color = new THREE.Color(`hsl(${0 + stack.length * 7}, 90%, 60%)`);
-  const material = new THREE.MeshLambertMaterial({ color });
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.set(x, y, z);
-  scene.add(mesh);
-
-  // CannonJS
-  const shape = new CANNON.Box(
-    new CANNON.Vec3(width / 2, boxHeight / 2, depth / 2)
-  );
-  let mass = falls ? 1 : 0; // If it shouldn't fall then setting the mass to zero will keep it stationary
-  mass *= width / originalBoxSize; // Reduce mass proportionately by size
-  mass *= depth / originalBoxSize; // Reduce mass proportionately by size
-  const body = new CANNON.Body({ mass, shape });
-  body.position.set(x, y, z);
-  world.addBody(body);
- 
-  return {
-    threejs: mesh,
-    cannonjs: body,
-    width,
-    depth
-  };
-}
-
 function cutBox(topLayer, overlap, size, delta) {
   const direction = topLayer.direction;
   const newWidth = direction == "x" ? overlap : topLayer.width;
@@ -163,7 +129,15 @@ function eventHandler() {
   if (ended) start();
   else splitAndAdd();
 }
-
+function missed() {
+  const topLayer = stack[stack.length - 1];
+  ended = true;
+}
+function addOverhang(x, z, width, depth) {
+  const y = boxHeight * (stack.length - 1); // Add the new box one the same layer
+  const overhang = generateBox(x, y, z, width, depth, true);
+  overhangs.push(overhang);
+}
 function splitAndAdd() {
   if (ended) return;
 
@@ -202,12 +176,46 @@ function splitAndAdd() {
     missed();
   }
 }
+function generateBox(x, y, z, width, depth, falls) {
+  // ThreeJS
+  const geometry = new THREE.BoxGeometry(width, boxHeight, depth);
+  const color = new THREE.Color(`hsl(${0 + stack.length * 7}, 90%, 60%)`);
+  const material = new THREE.MeshLambertMaterial({ color });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.set(x, y, z);
+  scene.add(mesh);
 
-function missed() {
-  const topLayer = stack[stack.length - 1];
-  ended = true;
+  // CannonJS
+  const shape = new CANNON.Box(
+    new CANNON.Vec3(width / 2, boxHeight / 2, depth / 2)
+  );
+  let mass = falls ? 1 : 0; // If it shouldn't fall then setting the mass to zero will keep it stationary
+  mass *= width / originalBoxSize; // Reduce mass proportionately by size
+  mass *= depth / originalBoxSize; // Reduce mass proportionately by size
+  const body = new CANNON.Body({ mass, shape });
+  body.position.set(x, y, z);
+  world.addBody(body);
+ 
+  return {
+    threejs: mesh,
+    cannonjs: body,
+    width,
+    depth
+  };
 }
 
+
+
+
+function updatePhysics(timePassed) {
+  world.step(timePassed / 2300); // Step the physics world
+
+  // Copy coordinates from Cannon.js to Three.js
+  overhangs.forEach((element) => {
+    element.threejs.position.copy(element.cannonjs.position);
+    element.threejs.quaternion.copy(element.cannonjs.quaternion);
+  });
+}
 function animation(time) {
   if (lastTime) {
     const timePassed = time - lastTime;
@@ -216,9 +224,9 @@ function animation(time) {
     const topLayer = stack[stack.length - 1];
     const previousLayer = stack[stack.length - 2];
 
-    const boxShouldMove = !ended
+    const shouldMove = !ended
 
-    if (boxShouldMove) {
+    if (shouldMove) {
       // Keep the position visible on UI and the position in the model in sync
       topLayer.threejs.position[topLayer.direction] += speed * timePassed;
       topLayer.cannonjs.position[topLayer.direction] += speed * timePassed;
@@ -239,14 +247,4 @@ function animation(time) {
     renderer.render(scene, camera);
   }
   lastTime = time;
-}
-
-function updatePhysics(timePassed) {
-  world.step(timePassed / 2300); // Step the physics world
-
-  // Copy coordinates from Cannon.js to Three.js
-  overhangs.forEach((element) => {
-    element.threejs.position.copy(element.cannonjs.position);
-    element.threejs.quaternion.copy(element.cannonjs.quaternion);
-  });
 }

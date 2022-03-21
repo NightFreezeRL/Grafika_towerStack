@@ -107,7 +107,7 @@ function start() {
 
 function addLayer(x, z, width, depth, direction) {
   const y = towerHeight * tower.length; // Pievieno torņa gabalu vienu augstāk
-  const layer = generateBox(x, y, z, width, depth, false);
+  const layer = generateTowerBlock(x, y, z, width, depth, false);
   layer.direction = direction;
   tower.push(layer);
 }
@@ -138,7 +138,7 @@ function missed() {
 }
 function addOverhang(x, z, width, depth) {
   const y = towerHeight * (tower.length - 1); // Pievieno torņa gabalu tajā pašā virsmā
-  const overhang = generateBox(x, y, z, width, depth, true);
+  const overhang = generateTowerBlock(x, y, z, width, depth, true);
   overhangs.push(overhang);
 }
 function splitAndAdd() {
@@ -179,7 +179,7 @@ function splitAndAdd() {
     missed();
   }
 }
-function generateBox(x, y, z, width, depth, falls) {
+function generateTowerBlock(x, y, z, width, depth, falls) {
   // ThreeJS
   const geometry = new THREE.BoxGeometry(width, towerHeight, depth);
   const color = new THREE.Color(`hsl(${0 + tower.length * 7}, 90%, 60%)`);

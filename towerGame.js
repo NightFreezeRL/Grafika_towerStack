@@ -1,13 +1,15 @@
-let camera, scene, renderer; // ThreeJS globals
-let world; // CannonJs world
-let lastTime; // Last timestamp of animation
-let stack; // Parts that stay solid on top of each other
-let overhangs; // Overhanging parts that fall down
-const boxHeight = 1; // Height of each layer
-const originalBoxSize = 3; // Original width and height of a box
+let camera, scene, renderer; // ThreeJS
+let world; // CannonJs 
+let lastTime; // Pēdējās animācijas laaiks
+let tower; // Torņa gabali
 
-let ended;
+let ended;//Vai spēle ir beigusies
+let overhangs; // Pārpalikumi, kad torņa gabals ir pāri otram
+const towerHeight = 1; // torņa gabala lielums
+const originTowerSize = 3; // Orģinālais torņa gabala lielums
 
+
+//Paņem no html faila score , kuram skaita klāt, kad pieliek torņa gabalu
 const scoreElement = document.getElementById("score");
 
 
@@ -17,26 +19,27 @@ function init() {
 
   ended = true;
   lastTime = 0;
-  stack = [];
+  tower = [];
   overhangs = [];
 
 
-  // Initialize CannonJS
+  // Izveido cannon pasauli
   world = new CANNON.World();
-  world.gravity.set(0, -100, 0); // Gravity pulls things down
+  world.gravity.set(0, -100, 0); //pasaulei pieliek gravitāciju
   
-  // Initialize ThreeJs
+  // Izveido three.js lietas
   const aspect = window.innerWidth / window.innerHeight;
   const width = 10;
   const height = width / aspect;
 
+    //Kameras pozīcija
   camera = new THREE.OrthographicCamera(
-    width / -2, // left
-    width / 2, // right
-    height / 1, // top
-    height / -1, // bottom
-    0, // near plane
-    100 // far plane
+    width / -2, // Cik tālu no kreisās
+    width / 2, // Cik tālu no labās
+    height / 1, // Cik tālu no Augšas
+    height / -1, // Cik tālu no Lejas
+    0, // Cik tālu no tuvās plaknes
+    100 // Cik tālu no tālās plaknes
   );
 
 
@@ -44,19 +47,19 @@ function init() {
   camera.lookAt(0, 0, 0);
 
   scene = new THREE.Scene();
-  // Foundation
-  addLayer(0, 0, originalBoxSize, originalBoxSize);
+  // Sākuma
+  addLayer(0, 0, originTowerSize, originTowerSize);
 
 
-  // Set up lights
+  // Gaismas
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
   scene.add(ambientLight);
 
-  const dirLight = new THREE.DirectionalLight(0xffffff, 0.65);
-  dirLight.position.set(13, 15, 5);
-  scene.add(dirLight);
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.65);
+  directionalLight.position.set(13, 15, 5);
+  scene.add(directionalLight);
 
-  // Set up renderer
+  // Renderers
   renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setAnimationLoop(animation);
@@ -69,44 +72,44 @@ function start() {
   
   ended = false;
   lastTime = 0;
-  stack = [];
+  tower = [];
   overhangs = [];
 
   if (scoreElement) scoreElement.innerText = 0;
 
   if (world) {
-    // Remove every object from world
+    // Noņem objektus
     while (world.bodies.length > 0) {
       world.remove(world.bodies[0]);
     }
   }
 
   if (scene) {
-    // Remove every Mesh from the scene
+    // Noņem meshus no scēnas
     while (scene.children.find((c) => c.type == "Mesh")) {
       const mesh = scene.children.find((c) => c.type == "Mesh");
       scene.remove(mesh);
     }
 
-    // Foundation
-    addLayer(0, 0, originalBoxSize, originalBoxSize);
+    // Sākuma
+    addLayer(0, 0, originTowerSize, originTowerSize);
 
-    // First layer
-    addLayer(-10, 0, originalBoxSize, originalBoxSize, "x");
+    // Pirmais
+    addLayer(-10, 0, originTowerSize, originTowerSize, "x");
   }
 
   if (camera) {
-    // Reset camera positions
-    camera.position.set(4, 4, 4);
+    // Atliek kameras pozīciju
+    camera.position.set(5, 5, 5);
     camera.lookAt(0, 0, 0);
   }
 }
 
 function addLayer(x, z, width, depth, direction) {
-  const y = boxHeight * stack.length; // Add the new box one layer higher
+  const y = towerHeight * tower.length; // Pievieno torņa gabalu vienu augstāk
   const layer = generateBox(x, y, z, width, depth, false);
   layer.direction = direction;
-  stack.push(layer);
+  tower.push(layer);
 }
 
 function cutBox(topLayer, overlap, size, delta) {
@@ -114,11 +117,11 @@ function cutBox(topLayer, overlap, size, delta) {
   const newWidth = direction == "x" ? overlap : topLayer.width;
   const newDepth = direction == "z" ? overlap : topLayer.depth;
 
-  // Update metadata
+  // Atjauno torņa proporcijas
   topLayer.width = newWidth;
   topLayer.depth = newDepth;
 
-  // Update ThreeJS model
+  // Atjauno Three js modeli
   topLayer.threejs.scale[direction] = overlap / size;
   topLayer.threejs.position[direction] -= delta / 2;
 }
@@ -130,19 +133,19 @@ function eventHandler() {
   else splitAndAdd();
 }
 function missed() {
-  const topLayer = stack[stack.length - 1];
+  const topLayer = tower[tower.length - 1];
   ended = true;
 }
 function addOverhang(x, z, width, depth) {
-  const y = boxHeight * (stack.length - 1); // Add the new box one the same layer
+  const y = towerHeight * (tower.length - 1); // Pievieno torņa gabalu tajā pašā virsmā
   const overhang = generateBox(x, y, z, width, depth, true);
   overhangs.push(overhang);
 }
 function splitAndAdd() {
   if (ended) return;
 
-  const topLayer = stack[stack.length - 1];
-  const previousLayer = stack[stack.length - 2];
+  const topLayer = tower[tower.length - 1];
+  const previousLayer = tower[tower.length - 2];
 
   const direction = topLayer.direction;
 
@@ -163,14 +166,14 @@ function splitAndAdd() {
 
     addOverhang(overhangX, overhangZ, overhangWidth, overhangDepth);
 
-    // Next layer
+    // Nākošais slānis
     const nextX = direction == "x" ? topLayer.threejs.position.x : -10;
     const nextZ = direction == "z" ? topLayer.threejs.position.z : -10;
-    const newWidth = topLayer.width; // New layer has the same size as the cut top layer
-    const newDepth = topLayer.depth; // New layer has the same size as the cut top layer
+    const newWidth = topLayer.width;
+    const newDepth = topLayer.depth; 
     const nextDirection = direction == "x" ? "z" : "x";
 
-    if (scoreElement) scoreElement.innerText = stack.length - 1;
+    if (scoreElement) scoreElement.innerText = tower.length - 1;
     addLayer(nextX, nextZ, newWidth, newDepth, nextDirection);
   } else {
     missed();
@@ -178,8 +181,8 @@ function splitAndAdd() {
 }
 function generateBox(x, y, z, width, depth, falls) {
   // ThreeJS
-  const geometry = new THREE.BoxGeometry(width, boxHeight, depth);
-  const color = new THREE.Color(`hsl(${0 + stack.length * 7}, 90%, 60%)`);
+  const geometry = new THREE.BoxGeometry(width, towerHeight, depth);
+  const color = new THREE.Color(`hsl(${0 + tower.length * 7}, 90%, 60%)`);
   const material = new THREE.MeshLambertMaterial({ color });
   const mesh = new THREE.Mesh(geometry, material);
   mesh.position.set(x, y, z);
@@ -187,11 +190,11 @@ function generateBox(x, y, z, width, depth, falls) {
 
   // CannonJS
   const shape = new CANNON.Box(
-    new CANNON.Vec3(width / 2, boxHeight / 2, depth / 2)
+    new CANNON.Vec3(width / 2, towerHeight / 2, depth / 2)
   );
-  let mass = falls ? 1 : 0; // If it shouldn't fall then setting the mass to zero will keep it stationary
-  mass *= width / originalBoxSize; // Reduce mass proportionately by size
-  mass *= depth / originalBoxSize; // Reduce mass proportionately by size
+  let mass = falls ? 1 : 0; // ja nevajag krist, tad padara stacionāru ar masu 0
+  mass *= width / originTowerSize; // masa proporcionāla lielumam
+  mass *= depth / originTowerSize; // masa proporcionāla lielumam
   const body = new CANNON.Body({ mass, shape });
   body.position.set(x, y, z);
   world.addBody(body);
@@ -208,9 +211,9 @@ function generateBox(x, y, z, width, depth, falls) {
 
 
 function updatePhysics(timePassed) {
-  world.step(timePassed / 2300); // Step the physics world
+  world.step(timePassed / 2300); 
 
-  // Copy coordinates from Cannon.js to Three.js
+  // kopē kooridnātes Cannon.js uz Three.js
   overhangs.forEach((element) => {
     element.threejs.position.copy(element.cannonjs.position);
     element.threejs.quaternion.copy(element.cannonjs.quaternion);
@@ -221,25 +224,25 @@ function animation(time) {
     const timePassed = time - lastTime;
     const speed = 0.008;
 
-    const topLayer = stack[stack.length - 1];
-    const previousLayer = stack[stack.length - 2];
+    const topLayer = tower[tower.length - 1];
+    const previousLayer = tower[tower.length - 2];
 
     const shouldMove = !ended
 
     if (shouldMove) {
-      // Keep the position visible on UI and the position in the model in sync
+      // Savieno laikus Vizuālajā pozīcijā un pozīciju modelī
       topLayer.threejs.position[topLayer.direction] += speed * timePassed;
       topLayer.cannonjs.position[topLayer.direction] += speed * timePassed;
 
-      // If the box went beyond the stack then show up the fail screen
+      // Ja palaida torņa gabalu garām, tad uzskaita par palaistu garām
       if (topLayer.threejs.position[topLayer.direction] > 10) {
         missed();
       }
     } else {
     }
 
-    // 4 is the initial camera height
-    if (camera.position.y < boxHeight * (stack.length - 2) + 4) {
+    // origīnālais kameras augstums
+    if (camera.position.y < towerHeight * (tower.length - 2) + 5) {
       camera.position.y += speed * timePassed;
     }
 
